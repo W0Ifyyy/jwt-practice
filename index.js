@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
+import User from "./src/models/User.js";
 
 dotenv.config();
 
@@ -16,8 +17,8 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/", (req, res) => res.send("Ok!"));
 
 // Endpoint to get users (requires authentication)
-app.get("/api/users", authenticate, (req, res) => {
-  const users = [{ id: 1, name: "Bartosz" }];
+app.get("/api/users", async (req, res) => {
+  const users = await User.query().withGraphFetched("articles");
   res.send(users);
 });
 
@@ -31,7 +32,7 @@ app.post("/api/auth/login", (req, res) => {
   });
 
   const refreshToken = jwt.sign({ id: 1 }, process.env.REFRESH_TOKEN_SECRET, {
-    expiresIn: 525600, // Valid for 1 year
+    expiresIn: 525600, // Valid for 1 years
   });
 
   res.cookie("JWT", accessToken, {
